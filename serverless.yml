@@ -22,5 +22,5 @@ functions:
   cronHandler:
     handler: handler.run
     events:
-      - schedule: cron(0/2 * ? * * *)
+      - schedule: cron(45 4 ? * * *)
     memorySize: 128
