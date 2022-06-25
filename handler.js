@@ -1,5 +1,8 @@
 'use strict';
 
+const middy = require('@middy/core')
+const ssm = require('@middy/ssm')
+
 const AWS = require('aws-sdk');
 const PublicGoogleSheetsParser = require('public-google-sheets-parser');
 
@@ -50,13 +53,16 @@ const firstDayOfYear = new Date(currentYear, 0);
 const numberOfDays = Math.floor((currentDate - firstDayOfYear) / (24 * 60 * 60 * 1000));
 const weekNo = Math.ceil(( currentDate.getDay() + 1 + numberOfDays) / 7);
 
-const spreadsheetId = process.env.SPREADSHEET_ID;
-const parser = new PublicGoogleSheetsParser(spreadsheetId, `${currentYear}W${weekNo}`);
-
-
-module.exports.run = async () => {
+module.exports.run = middy(async (event, context) => {
+  const parser = new PublicGoogleSheetsParser(context.config.spreadsheetId, `${currentYear}W${weekNo}`);
   parser.parse()
     .then(items => getEvents(items))
-    .then(events => sendEmail(events, 'grn@infinium.ro', 'grn@infinium.ro'))
+    .then(events => sendEmail(events, context.config.sender, context.config.recipient))
     .catch(error => console.log(error))
-};
+}).use(ssm({
+  cache: false,
+  setToContext: true,
+  fetchData: {
+    config: `/personal/daily_schedule/config`
+  }
+}));
