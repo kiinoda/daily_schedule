@@ -5,9 +5,22 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs14.x
+  region: eu-west-1
+  iam:
+    role:
+      statements:
+      - Effect: Allow
+        Action:
+          - ssm:*
+        Resource: "arn:aws:ssm:*"
+      - Effect: Allow
+        Action:
+          - ses:*
+        Resource: "arn:aws:ses:*"
 
 functions:
   cronHandler:
     handler: handler.run
     events:
       - schedule: cron(0/2 * ? * * *)
+    memorySize: 128
