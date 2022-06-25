@@ -25,9 +25,9 @@ const sendEmail = async (events, sender, recipient) => {
     const status = await ses.sendEmail(params).promise();
     console.log('Successfully sent email');
     console.log(status);
-  } catch {
+  } catch (err) {
     console.log('Failed sending email');
-    console.log(error);
+    console.log(err);
   }
   
 }
