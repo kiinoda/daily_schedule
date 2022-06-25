@@ -59,7 +59,7 @@ module.exports.run = middy(async (event, context) => {
   const parser = new PublicGoogleSheetsParser(context.config.spreadsheetId, `${currentYear}W${weekNo}`);
   const items = await parser.parse();
   const events = await getEvents(items);
-  sendEmail(events, context.config.sender, context.config.recipient);
+  await sendEmail(events, context.config.sender, context.config.recipient);
 }).use(ssm({
   cache: false,
   setToContext: true,
