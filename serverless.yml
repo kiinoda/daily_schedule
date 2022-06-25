@@ -1,0 +1,13 @@
+service: daily-schedule
+frameworkVersion: '3'
+
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+functions:
+  cronHandler:
+    handler: handler.run
+    events:
+      - schedule: cron(0/2 * ? * * *)

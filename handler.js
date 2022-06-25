@@ -1,10 +1,12 @@
+'use strict';
+
 const AWS = require('aws-sdk');
 const PublicGoogleSheetsParser = require('public-google-sheets-parser');
 
 AWS.config.update({ region: "eu-west-1" });
 
 const sendEmail = (events, sender, recipient) => {
-  message = events.join('\n');
+  const message = events.join('\n');
   var params = {
     Destination: { ToAddresses: [ recipient ] },
     Message: {
@@ -31,7 +33,7 @@ const getEvents = (spreadsheet_items) => {
     const keys = Object.keys(row);
     for (const key of keys) {
       if (row[key] && key.includes(currentDayName)) {
-        time = row['AWS '] ? row['AWS '] : '----';
+        const time = row['AWS '] ? row['AWS '] : '----';
         events.push(`${time} ${row[key]} ${row['']}`);
       }
     }
@@ -52,7 +54,9 @@ const spreadsheetId = process.env.SPREADSHEET_ID;
 const parser = new PublicGoogleSheetsParser(spreadsheetId, `${currentYear}W${weekNo}`);
 
 
-parser.parse()
-  .then((items) => getEvents(items))
-  .then(events => sendEmail(events, 'grn@infinium.ro', 'grn@infinium.ro'))
-  .catch(error => console.log(error))
+module.exports.run = async () => {
+  parser.parse()
+    .then(items => getEvents(items))
+    .then(events => sendEmail(events, 'grn@infinium.ro', 'grn@infinium.ro'))
+    .catch(error => console.log(error))
+};
