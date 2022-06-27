@@ -47,13 +47,29 @@ const getEvents = async (spreadsheet_items) => {
   return events
 }
 
-const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+function getWeekNumber(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+  return [d.getUTCFullYear(), weekNo];
+}
+
+function getWeekDay(d) {
+  const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  return days[d.getUTCDay()]
+}
+
+function getYear(d) {
+  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  return d.getUTCFullYear();
+}
+
 const currentDate = new Date();
-const currentYear = currentDate.getFullYear();
-const currentDayName = days[currentDate.getDay()];
-const firstDayOfYear = new Date(currentYear, 0);
-const numberOfDays = Math.floor((currentDate - firstDayOfYear) / (24 * 60 * 60 * 1000));
-const weekNo = Math.ceil(( currentDate.getDay() + 1 + numberOfDays) / 7);
+const [_, weekNo] = getWeekNumber(currentDate);
+const currentDayName = getWeekDay(currentDate);
+const currentYear = getYear(currentDate);
 
 module.exports.run = middy(async (event, context) => {
   const parser = new PublicGoogleSheetsParser(context.config.spreadsheetId, `${currentYear}W${weekNo}`);
