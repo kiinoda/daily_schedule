@@ -6,6 +6,12 @@ const ssm = require('@middy/ssm')
 const AWS = require('aws-sdk');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 
+const EVENT_RANGE = "A1:Q50"
+const SHEET_FIRST_ROW = 3
+const SHEET_END_ROW = 50
+const SHEET_TIME_COLUMN = 8
+const SHEET_EVENT_COLUMN = 9
+
 AWS.config.update({ region: "eu-west-1" });
 
 const sendEmail = async (events, sender, recipient) => {
@@ -34,11 +40,11 @@ const sendEmail = async (events, sender, recipient) => {
 
 const getEvents = async (sheet, currentDayNumber) => {
   const events = new Array();
-  for (let r = 3; r < 50; r++) {
+  for (let r = SHEET_FIRST_ROW; r < SHEET_END_ROW; r++) {
     const evt = sheet.getCell(r, currentDayNumber).value;
     if (evt != null) {
-      const time = sheet.getCell(r, 8).value || "----";
-      const desc = sheet.getCell(r, 9).value;
+      const time = sheet.getCell(r, SHEET_TIME_COLUMN).value || "----";
+      const desc = sheet.getCell(r, SHEET_EVENT_COLUMN).value;
       events.push(`${evt} ${time} ${desc}`);
     }
   }
@@ -78,7 +84,6 @@ module.exports.run = middy(async (event, context) => {
   const sheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
   await sheet.loadCells('A1:Q50');
   const events = await getEvents(sheet, currentDayNumber);
-  console.log(events);
   await sendEmail(events, context.config.sender, context.config.recipient);
 }).use(ssm({
   cache: false,
