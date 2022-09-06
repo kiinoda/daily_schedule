@@ -4,14 +4,14 @@ const middy = require('@middy/core')
 const ssm = require('@middy/ssm')
 
 const AWS = require('aws-sdk');
-const PublicGoogleSheetsParser = require('public-google-sheets-parser');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
 
 AWS.config.update({ region: "eu-west-1" });
 
 const sendEmail = async (events, sender, recipient) => {
   const message = events.join('\n');
   var params = {
-    Destination: { ToAddresses: [ recipient ] },
+    Destination: { ToAddresses: [recipient] },
     Message: {
       Body: {
         Text: { Data: message }
@@ -29,36 +29,36 @@ const sendEmail = async (events, sender, recipient) => {
     console.log('Failed sending email');
     console.log(err);
   }
-  
+
 }
 
-const getEvents = async (spreadsheet_items) => {
+const getEvents = async (sheet, currentDayNumber) => {
   const events = new Array();
-  spreadsheet_items.slice(1).forEach(row => {
-    const keys = Object.keys(row);
-    for (const key of keys) {
-      if (row[key] && key.includes(currentDayName)) {
-        const time = row['AWS '] ? row['AWS '] : '----';
-        events.push(`${time} ${row[key]} ${row['']}`);
-      }
+  for (let r = 3; r < 50; r++) {
+    const evt = sheet.getCell(r, currentDayNumber).value;
+    if (evt != null) {
+      const time = sheet.getCell(r, 8).value || "----";
+      const desc = sheet.getCell(r, 9).value;
+      events.push(`${evt} ${time} ${desc}`);
     }
-  })
+  }
   if (events.length == 0) throw ('No events in the spreadsheet.');
   return events
 }
 
 function getWeekNumber(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return [d.getUTCFullYear(), weekNo];
 }
 
-function getWeekDay(d) {
-  const days = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+function getWeekDayNumberInRomanian(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  return days[d.getUTCDay()]
+  const utcDay = d.getUTCDay()
+  const ourDay = 0 == utcDay ? 7 : utcDay - 1 // our sheet uses Monday as the first day
+  return ourDay
 }
 
 function getYear(d) {
@@ -68,13 +68,17 @@ function getYear(d) {
 
 const currentDate = new Date();
 const [_, weekNo] = getWeekNumber(currentDate);
-const currentDayName = getWeekDay(currentDate);
+const currentDayNumber = getWeekDayNumberInRomanian(currentDate);
 const currentYear = getYear(currentDate);
 
 module.exports.run = middy(async (event, context) => {
-  const parser = new PublicGoogleSheetsParser(context.config.spreadsheetId, `${currentYear}W${weekNo}`);
-  const items = await parser.parse();
-  const events = await getEvents(items);
+  const doc = new GoogleSpreadsheet(context.config.spreadsheetId);
+  doc.useApiKey(context.config.apiKey);
+  await doc.loadInfo();
+  const sheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
+  await sheet.loadCells('A1:Q50');
+  const events = await getEvents(sheet, currentDayNumber);
+  console.log(events);
   await sendEmail(events, context.config.sender, context.config.recipient);
 }).use(ssm({
   cache: false,
