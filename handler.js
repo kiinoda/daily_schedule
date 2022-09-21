@@ -11,6 +11,7 @@ const SHEET_FIRST_ROW = 3
 const SHEET_END_ROW = 50
 const SHEET_TIME_COLUMN = 8
 const SHEET_EVENT_COLUMN = 9
+const SHEET_MIGRATE_COLUMN = 16
 
 AWS.config.update({ region: "eu-west-1" });
 
@@ -40,16 +41,17 @@ const sendEmail = async (events, sender, recipient) => {
 
 const getEvents = async (sheet, currentDayNumber) => {
   const events = new Array();
-  for (let r = SHEET_FIRST_ROW; r < SHEET_END_ROW; r++) {
-    const evt = sheet.getCell(r, currentDayNumber).value;
-    if (evt != null) {
-      const time = sheet.getCell(r, SHEET_TIME_COLUMN).value || "----";
-      const desc = sheet.getCell(r, SHEET_EVENT_COLUMN).value;
-      events.push(`${evt} ${time} ${desc}`);
+  for (let i = SHEET_FIRST_ROW; i < SHEET_END_ROW; i++) {
+    const eventSignifier = sheet.getCell(i, currentDayNumber).value;
+    const taggedForMigration = sheet.getCell(i, SHEET_MIGRATE_COLUMN).value;
+    if (null != eventSignifier && null == taggedForMigration) {
+      const time = sheet.getCell(i, SHEET_TIME_COLUMN).value || "----";
+      const description = sheet.getCell(i, SHEET_EVENT_COLUMN).value;
+      events.push(`${eventSignifier} ${time} ${description}`);
     }
   }
   if (events.length == 0) throw ('No events in the spreadsheet.');
-  return events
+  return events;
 }
 
 function getWeekNumber(d) {
@@ -82,7 +84,7 @@ module.exports.run = middy(async (event, context) => {
   doc.useApiKey(context.config.apiKey);
   await doc.loadInfo();
   const sheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
-  await sheet.loadCells('A1:Q50');
+  await sheet.loadCells(EVENT_RANGE);
   const events = await getEvents(sheet, currentDayNumber);
   await sendEmail(events, context.config.sender, context.config.recipient);
 }).use(ssm({
