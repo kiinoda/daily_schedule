@@ -16,12 +16,14 @@ const SHEET_MIGRATE_COLUMN = 16
 AWS.config.update({ region: "eu-west-1" });
 
 const sendEmail = async (events, sender, recipient) => {
-  const message = events.join('\n');
+  const textMessage = events.join('\n');
+  const htmlMessage = `<html><pre>${events.join('\n')}</pre></html>`;
   var params = {
     Destination: { ToAddresses: [recipient] },
     Message: {
       Body: {
-        Text: { Data: message }
+        Text: { Data: textMessage },
+        Html: { Data: htmlMessage }
       },
       Subject: { Data: 'Today\'s Schedule' }
     },
