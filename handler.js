@@ -12,6 +12,7 @@ const SHEET_END_ROW = 50
 const SHEET_TIME_COLUMN = 8
 const SHEET_EVENT_COLUMN = 9
 const SHEET_MIGRATE_COLUMN = 16
+const EMPTY_TIME_PLACEHOLDER = "----"
 
 AWS.config.update({ region: "eu-west-1" });
 
@@ -47,7 +48,7 @@ const getEvents = async (sheet, currentDayNumber) => {
     const eventSignifier = sheet.getCell(i, currentDayNumber).value;
     const taggedForMigration = sheet.getCell(i, SHEET_MIGRATE_COLUMN).value;
     if (null != eventSignifier && null == taggedForMigration) {
-      const time = sheet.getCell(i, SHEET_TIME_COLUMN).value || "----";
+      const time = sheet.getCell(i, SHEET_TIME_COLUMN).value || EMPTY_TIME_PLACEHOLDER;
       const description = sheet.getCell(i, SHEET_EVENT_COLUMN).value;
       events.push(`${eventSignifier} ${time} ${description}`);
     }
