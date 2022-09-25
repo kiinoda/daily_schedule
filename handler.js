@@ -55,7 +55,6 @@ const getEvents = async (sheet, currentDayNumber) => {
       events.push(`${eventSignifier} ${time} ${description}`);
     }
   }
-  if (events.length == 0) throw ('No events in the spreadsheet.');
   return events;
 }
 
