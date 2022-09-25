@@ -44,6 +44,8 @@ const sendEmail = async (events, sender, recipient) => {
 
 const getEvents = async (sheet, currentDayNumber) => {
   const events = new Array();
+  events.push("Remember: Actual life happens outside the computer.");
+  events.push("");
   for (let i = SHEET_FIRST_ROW; i < SHEET_END_ROW; i++) {
     const eventSignifier = sheet.getCell(i, currentDayNumber).value;
     const taggedForMigration = sheet.getCell(i, SHEET_MIGRATE_COLUMN).value;
