@@ -68,7 +68,7 @@ function getWeekNumber(d) {
 function getWeekDayNumberInRomanian(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const utcDay = d.getUTCDay()
-  const ourDay = 0 == utcDay ? 7 : utcDay - 1 // our sheet uses Monday as the first day
+  const ourDay = 0 == utcDay ? 6 : utcDay - 1 // our sheet uses Monday as the first day
   return ourDay
 }
 
