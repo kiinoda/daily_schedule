@@ -14,6 +14,7 @@ const EVENTS_SHEET_EVENT_COLUMN = 9
 const EVENTS_SHEET_MIGRATE_COLUMN = 16
 const EVENTS_EMPTY_TIME_PLACEHOLDER = "----"
 
+const TASKS_SHEET_NAME = "NorthStar"
 const TASKS_RANGE = "A10:C100"
 const TASKS_SHEET_FIRST_ROW = 10
 const TASKS_SHEET_END_ROW = 100
@@ -115,7 +116,7 @@ module.exports.run = middy(async (event, context) => {
   const events_sheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
   await events_sheet.loadCells(EVENT_RANGE);
   const events = await getEvents(events_sheet, currentDayNumber);
-  const tasks_sheet = doc.sheetsByTitle["NorthStar"]
+  const tasks_sheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
   await tasks_sheet.loadCells(TASKS_RANGE);
   const easy_tasks = await getEasyTasks(tasks_sheet);
   await sendEmail(events, easy_tasks, context.config.sender, context.config.recipient);
