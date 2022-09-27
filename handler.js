@@ -77,7 +77,7 @@ const getEasyTasks = async (sheet) => {
     const taskSignifier = sheet.getCell(i, TASKS_SHEET_TAG_COLUMN).value;
     if (TASKS_SHEET_EASY_SIGNIFIER == taskSignifier) {
       const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
-      tasks.push(`* ${description}`);
+      tasks.push(`- ${description}`);
     }
   }
   if (tasks.length > 0) {
