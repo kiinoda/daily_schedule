@@ -51,8 +51,13 @@ const sendEmail = async (events, easy_tasks, sender, recipient) => {
 }
 
 const getEvents = async (sheet, currentDayNumber) => {
+  const thoughts = new Array(
+    "Are you doing enough to maintain your physical and mental health?",
+    "Hey, actual life happens outside the computer."
+  )
   const events = new Array();
-  events.push("Hey, actual life happens outside the computer.");
+  const randomThoughtID = Math.floor(Math.random() * thoughts.length);
+  events.push(thoughts[randomThoughtID]);
   events.push("");
   for (let i = EVENTS_SHEET_FIRST_ROW; i < EVENTS_SHEET_END_ROW; i++) {
     const eventSignifier = sheet.getCell(i, currentDayNumber).value;
