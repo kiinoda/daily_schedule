@@ -58,6 +58,7 @@ const sendEmail = async (events, easy_tasks, dev_tasks, sender, recipient) => {
 
 const getEvents = async (sheet, currentDayNumber) => {
   const thoughts = new Array(
+    "If you can't delegate, take care of the urgent items first!",
     "Are you doing enough to maintain your physical and mental health?",
     "Hey, actual life happens outside the computer."
   )
