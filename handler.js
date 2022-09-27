@@ -22,11 +22,17 @@ const TASKS_SHEET_TASK_COLUMN = 0
 const TASKS_SHEET_TAG_COLUMN = 2
 const TASKS_SHEET_EASY_SIGNIFIER = 2
 
+const DEV_TASKS_SHEET_NAME = "NorthStar"
+const DEV_TASKS_RANGE = "A2:A50"
+const DEV_TASKS_SHEET_FIRST_ROW = "1"
+const DEV_TASKS_SHEET_LAST_ROW = "50"
+const DEV_TASKS_SHEET_TASK_COLUMN = 0
+
 AWS.config.update({ region: "eu-west-1" });
 
-const sendEmail = async (events, easy_tasks, sender, recipient) => {
-  const textMessage = events.join('\n') + '\n\n\n' + easy_tasks.join('\n');
-  const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${easy_tasks.join('\n')}</pre></html>`;
+const sendEmail = async (events, easy_tasks, dev_tasks, sender, recipient) => {
+  const textMessage = events.join('\n') + '\n\n\n' + easy_tasks.join('\n') + '\n\n\n' + dev_tasks.join('\n');
+  const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${easy_tasks.join('\n')}\n\n\n${dev_tasks.join('\n')}</pre></html>`;
   var params = {
     Destination: { ToAddresses: [recipient] },
     Message: {
@@ -85,7 +91,22 @@ const getEasyTasks = async (sheet) => {
   } else {
     tasks.push("Looks like there are no easy tasks queued up.");
   }
+  return tasks;
+}
 
+const getDevTasks = async (sheet) => {
+  const tasks = new Array();
+  for (let i = DEV_TASKS_SHEET_FIRST_ROW; i < DEV_TASKS_SHEET_LAST_ROW; i++) {
+    const description = sheet.getCell(i, DEV_TASKS_SHEET_TASK_COLUMN).value;
+    if (null != description) {
+      tasks.push(`- ${description}`);
+    }
+  }
+  if (tasks.length > 0) {
+    tasks.unshift("Dev tasks you can progress on:\n");
+  } else {
+    tasks.push("Looks like there are no dev tasks queued up.");
+  }
   return tasks;
 }
 
@@ -124,7 +145,11 @@ module.exports.run = middy(async (event, context) => {
   const tasks_sheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
   await tasks_sheet.loadCells(TASKS_RANGE);
   const easy_tasks = await getEasyTasks(tasks_sheet);
-  await sendEmail(events, easy_tasks, context.config.sender, context.config.recipient);
+  const dev_tasks_sheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
+  await dev_tasks_sheet.loadCells(DEV_TASKS_RANGE);
+  const dev_tasks = await getDevTasks(dev_tasks_sheet);
+
+  await sendEmail(events, easy_tasks, dev_tasks, context.config.sender, context.config.recipient);
 }).use(ssm({
   cache: false,
   setToContext: true,
