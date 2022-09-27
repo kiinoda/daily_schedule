@@ -15,6 +15,6 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.1160.0",
-    "serverless": "^3.19.0"
+    "serverless": "^3.22.0"
   }
 }
