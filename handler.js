@@ -25,8 +25,8 @@ const TASKS_SHEET_EASY_SIGNIFIER = 2
 AWS.config.update({ region: "eu-west-1" });
 
 const sendEmail = async (events, easy_tasks, sender, recipient) => {
-  const textMessage = events.join('\n') + '\n' + easy_tasks.join('\n');
-  const htmlMessage = `<html><pre>${events.join('\n')}\n\n${easy_tasks.join('\n')}</pre></html>`;
+  const textMessage = events.join('\n') + '\n\n\n' + easy_tasks.join('\n');
+  const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${easy_tasks.join('\n')}</pre></html>`;
   var params = {
     Destination: { ToAddresses: [recipient] },
     Message: {
@@ -52,7 +52,7 @@ const sendEmail = async (events, easy_tasks, sender, recipient) => {
 
 const getEvents = async (sheet, currentDayNumber) => {
   const events = new Array();
-  events.push("Remember: Actual life happens outside the computer.");
+  events.push("Hey, actual life happens outside the computer.");
   events.push("");
   for (let i = EVENTS_SHEET_FIRST_ROW; i < EVENTS_SHEET_END_ROW; i++) {
     const eventSignifier = sheet.getCell(i, currentDayNumber).value;
@@ -76,9 +76,9 @@ const getEasyTasks = async (sheet) => {
     }
   }
   if (tasks.length > 0) {
-    tasks.unshift("Easy tasks you could take care of:")
+    tasks.unshift("Easy tasks you could take care of:\n");
   } else {
-    tasks.push("Looks like there are no easy tasks queued up.")
+    tasks.push("Looks like there are no easy tasks queued up.");
   }
 
   return tasks;
