@@ -103,12 +103,12 @@ const getDevTasks = async (sheet) => {
       tasks.push(`- ${description}`);
     }
   }
-  if (tasks.length > 0) {
-    tasks.unshift("Dev tasks you can progress on:\n");
+  const firstThreeTasks = tasks.slice(0, 3)
+  if (firstThreeTasks.length > 0) {
+    firstThreeTasks.unshift("Dev tasks you can progress on:\n");
   } else {
-    tasks.push("Looks like there are no dev tasks queued up.");
+    firstThreeTasks.push("Looks like there are no dev tasks queued up.");
   }
-  const firstThreeTasks = tasks.slice(0, 2)
   return firstThreeTasks;
 }
 
