@@ -22,6 +22,8 @@ const TASKS_SHEET_TASK_COLUMN = 0
 const TASKS_SHEET_TAG_COLUMN = 2
 const TASKS_SHEET_EASY_SIGNIFIER = 2
 const TASKS_SHEET_IMPORTANT_SIGNIFIER = "*"
+const TASKS_SHEET_URGENT_THRESHOLD = 3
+const TASKS_SHEET_MAGIC_DUE_DATE_VALUES = [2, 3, "*"]
 
 const DEV_TASKS_SHEET_NAME = "NorthStar"
 const DEV_TASKS_RANGE = "A2:A50"
@@ -106,18 +108,37 @@ const getRandomElements = (array, count) => {
 }
 
 const getHouseTasks = async (sheet) => {
+  const isUrgent = (theDate, threshold) => {
+    let result = false
+    if (theDate in TASKS_SHEET_MAGIC_DUE_DATE_VALUES) {
+      return false
+    }
+    const today = new Date();
+    const when = new Date(`${theDate.toString().slice(4,6)}/${theDate.toString().slice(7)}/${theDate.toString().slice(0,4)}`);
+    const howManyDays = (when - today) / (60 * 60 * 24 * 1000);
+    if (howManyDays < threshold) {
+      result = true
+    }
+    return result
+  }
   const easyTasks = new Array();
   const topTasks = new Array();
   const someEasyTasks = new Array();
   for (let i = TASKS_SHEET_FIRST_ROW; i < TASKS_SHEET_END_ROW; i++) {
     const taskSignifier = sheet.getCell(i, TASKS_SHEET_TAG_COLUMN).value;
-    if (TASKS_SHEET_IMPORTANT_SIGNIFIER == taskSignifier) {
-      const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
-      topTasks.push(`- ${description}`);
-    }
-    if (TASKS_SHEET_EASY_SIGNIFIER == taskSignifier) {
-      const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
-      easyTasks.push(`- ${description}`);
+    if (null != taskSignifier) {
+      if (isUrgent(taskSignifier, TASKS_SHEET_URGENT_THRESHOLD)) {
+        const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
+        topTasks.push(`- ${description}`);
+      }
+      if (TASKS_SHEET_IMPORTANT_SIGNIFIER == taskSignifier) {
+        const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
+        topTasks.push(`- ${description}`);
+      }
+      if (TASKS_SHEET_EASY_SIGNIFIER == taskSignifier) {
+        const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
+        easyTasks.push(`- ${description}`);
+      }
     }
   }
   if (topTasks.length > 0) {
