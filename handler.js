@@ -108,7 +108,8 @@ const getDevTasks = async (sheet) => {
   } else {
     tasks.push("Looks like there are no dev tasks queued up.");
   }
-  return tasks;
+  const firstThreeTasks = tasks.slice(0, 2)
+  return firstThreeTasks;
 }
 
 function getWeekNumber(d) {
