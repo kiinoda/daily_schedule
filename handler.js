@@ -21,6 +21,7 @@ const TASKS_SHEET_END_ROW = 99
 const TASKS_SHEET_TASK_COLUMN = 0
 const TASKS_SHEET_TAG_COLUMN = 2
 const TASKS_SHEET_EASY_SIGNIFIER = 2
+const TASKS_SHEET_IMPORTANT_SIGNIFIER = "*"
 
 const DEV_TASKS_SHEET_NAME = "NorthStar"
 const DEV_TASKS_RANGE = "A2:A50"
@@ -30,9 +31,9 @@ const DEV_TASKS_SHEET_TASK_COLUMN = 0
 
 AWS.config.update({ region: "eu-west-1" });
 
-const sendEmail = async (events, easy_tasks, dev_tasks, sender, recipient) => {
-  const textMessage = events.join('\n') + '\n\n\n' + easy_tasks.join('\n') + '\n\n\n' + dev_tasks.join('\n');
-  const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${easy_tasks.join('\n')}\n\n\n${dev_tasks.join('\n')}</pre></html>`;
+const sendEmail = async (events, houseTasks, devTasks, sender, recipient) => {
+  const textMessage = events.join('\n') + '\n\n\n' + houseTasks.join('\n') + '\n\n\n' + devTasks.join('\n');
+  const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${houseTasks.join('\n')}\n\n\n${devTasks.join('\n')}</pre></html>`;
   var params = {
     Destination: { ToAddresses: [recipient] },
     Message: {
@@ -78,20 +79,59 @@ const getEvents = async (sheet, currentDayNumber) => {
   return events;
 }
 
-const getEasyTasks = async (sheet) => {
-  const tasks = new Array();
+const getRandomElements = (array, count) => {
+  const randomIndexes = (maximum, howMany) => {
+    const arr = new Array();
+
+    // populate with values
+    for (let i = 0; i < maximum; i++) {
+      arr[i] = i;
+    }
+
+    // extract our random values
+    let processableLength = maximum-1;
+    while (maximum-processableLength < howMany) {
+      const randomNumber = Math.ceil(Math.random() * processableLength);
+      [arr[processableLength],arr[randomNumber]] = [arr[randomNumber], arr[processableLength]];
+      processableLength--;
+    }
+    return arr.slice(maximum-howMany);
+  }
+
+  const elements = new Array();
+  for (const value of randomIndexes(array.length, count)) {
+    elements.push(array[value]);
+  }
+  return elements;
+}
+
+const getHouseTasks = async (sheet) => {
+  const easyTasks = new Array();
+  const topTasks = new Array();
+  const someEasyTasks = new Array();
   for (let i = TASKS_SHEET_FIRST_ROW; i < TASKS_SHEET_END_ROW; i++) {
     const taskSignifier = sheet.getCell(i, TASKS_SHEET_TAG_COLUMN).value;
+    if (TASKS_SHEET_IMPORTANT_SIGNIFIER == taskSignifier) {
+      const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
+      topTasks.push(`- ${description}`);
+    }
     if (TASKS_SHEET_EASY_SIGNIFIER == taskSignifier) {
       const description = sheet.getCell(i, TASKS_SHEET_TASK_COLUMN).value;
-      tasks.push(`- ${description}`);
+      easyTasks.push(`- ${description}`);
     }
   }
-  if (tasks.length > 0) {
-    tasks.unshift("Easy tasks you could take care of:\n");
+  if (topTasks.length > 0) {
+    topTasks.unshift("Important tasks you must take care of:\n");
   } else {
-    tasks.push("Looks like there are no easy tasks queued up.");
+    topTasks.push("There are no important tasks queued up.\n");
   }
+  if (easyTasks.length > 0) {
+    someEasyTasks.push("Easy tasks you could take care of:\n");
+    someEasyTasks.push(...getRandomElements(easyTasks, 3));
+  } else {
+    someEasyTasks.push("Looks like there are no easy tasks queued up.\n");
+  }
+  const tasks = topTasks.concat(["\n"].concat(someEasyTasks));
   return tasks;
 }
 
@@ -141,17 +181,17 @@ module.exports.run = middy(async (event, context) => {
   const doc = new GoogleSpreadsheet(context.config.spreadsheetId);
   doc.useApiKey(context.config.apiKey);
   await doc.loadInfo();
-  const events_sheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
-  await events_sheet.loadCells(EVENT_RANGE);
-  const events = await getEvents(events_sheet, currentDayNumber);
-  const tasks_sheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
-  await tasks_sheet.loadCells(TASKS_RANGE);
-  const easy_tasks = await getEasyTasks(tasks_sheet);
-  const dev_tasks_sheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
-  await dev_tasks_sheet.loadCells(DEV_TASKS_RANGE);
-  const dev_tasks = await getDevTasks(dev_tasks_sheet);
+  const eventsSheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
+  await eventsSheet.loadCells(EVENT_RANGE);
+  const events = await getEvents(eventsSheet, currentDayNumber);
+  const tasksSheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
+  await tasksSheet.loadCells(TASKS_RANGE);
+  const houseTasks = await getHouseTasks(tasksSheet);
+  const devTasksSheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
+  await devTasksSheet.loadCells(DEV_TASKS_RANGE);
+  const devTasks = await getDevTasks(devTasksSheet);
 
-  await sendEmail(events, easy_tasks, dev_tasks, context.config.sender, context.config.recipient);
+  await sendEmail(events, houseTasks, devTasks, context.config.sender, context.config.recipient);
 }).use(ssm({
   cache: false,
   setToContext: true,
