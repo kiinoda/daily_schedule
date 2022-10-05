@@ -1,5 +1,3 @@
-org: scaryfelidae
-console: true
 service: daily-schedule
 frameworkVersion: '3'
 
