@@ -218,7 +218,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const tasksSheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
     await tasksSheet.loadCells(TASKS_RANGE);
-    houseTasks = await getHouseTasks(tasksSheet);
+    houseTasks = getHouseTasks(tasksSheet);
   } catch {
     houseTasks = ['ERROR: House tasks could not be loaded.'];
   }
@@ -226,7 +226,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const devTasksSheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
     await devTasksSheet.loadCells(DEV_TASKS_RANGE);
-    devTasks = await getDevTasks(devTasksSheet);
+    devTasks = getDevTasks(devTasksSheet);
   } catch {
     devTasks = ['ERROR: Development tasks could not be loaded.'];
   }
