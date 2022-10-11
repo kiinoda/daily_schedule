@@ -59,7 +59,7 @@ const sendEmail = async (events, houseTasks, devTasks, sender, recipient) => {
 
 }
 
-const getEvents = (sheet, currentDayNumber) => {
+const getEvents = async (sheet, currentDayNumber) => {
   const thoughts = new Array(
     "Hey, what do you fear most today?",
     "If you can't delegate, take care of the urgent items first!",
@@ -210,7 +210,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const eventsSheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
     await eventsSheet.loadCells(EVENT_RANGE);
-    events = getEvents(eventsSheet, currentDayNumber);
+    events = await getEvents(eventsSheet, currentDayNumber);
   } catch {
     events = ['ERROR: Weekly data could not be loaded.'];
   }
@@ -218,7 +218,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const tasksSheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
     await tasksSheet.loadCells(TASKS_RANGE);
-    houseTasks = getHouseTasks(tasksSheet);
+    houseTasks = await getHouseTasks(tasksSheet);
   } catch {
     houseTasks = ['ERROR: House tasks could not be loaded.'];
   }
@@ -226,7 +226,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const devTasksSheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
     await devTasksSheet.loadCells(DEV_TASKS_RANGE);
-    devTasks = getDevTasks(devTasksSheet);
+    devTasks = await getDevTasks(devTasksSheet);
   } catch {
     devTasks = ['ERROR: Development tasks could not be loaded.'];
   }
