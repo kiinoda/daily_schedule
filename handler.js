@@ -59,7 +59,7 @@ const sendEmail = async (events, houseTasks, devTasks, sender, recipient) => {
 
 }
 
-const getEvents = async (sheet, currentDayNumber) => {
+const getEvents = (sheet, currentDayNumber) => {
   const thoughts = new Array(
     "Hey, what do you fear most today?",
     "If you can't delegate, take care of the urgent items first!",
@@ -203,15 +203,33 @@ module.exports.run = middy(async (event, context) => {
   const doc = new GoogleSpreadsheet(context.config.spreadsheetId);
   doc.useApiKey(context.config.apiKey);
   await doc.loadInfo();
-  const eventsSheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
-  await eventsSheet.loadCells(EVENT_RANGE);
-  const events = await getEvents(eventsSheet, currentDayNumber);
-  const tasksSheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
-  await tasksSheet.loadCells(TASKS_RANGE);
-  const houseTasks = await getHouseTasks(tasksSheet);
-  const devTasksSheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
-  await devTasksSheet.loadCells(DEV_TASKS_RANGE);
-  const devTasks = await getDevTasks(devTasksSheet);
+  let events = new Array();
+  let houseTasks = new Array();
+  let devTasks = new Array();
+
+  try {
+    const eventsSheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
+    await eventsSheet.loadCells(EVENT_RANGE);
+    events = getEvents(eventsSheet, currentDayNumber);
+  } catch {
+    events = ['ERROR: Weekly data could not be loaded.'];
+  }
+
+  try {
+    const tasksSheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
+    await tasksSheet.loadCells(TASKS_RANGE);
+    houseTasks = await getHouseTasks(tasksSheet);
+  } catch {
+    houseTasks = ['ERROR: House tasks could not be loaded.'];
+  }
+
+  try {
+    const devTasksSheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
+    await devTasksSheet.loadCells(DEV_TASKS_RANGE);
+    devTasks = await getDevTasks(devTasksSheet);
+  } catch {
+    devTasks = ['ERROR: Development tasks could not be loaded.'];
+  }
 
   await sendEmail(events, houseTasks, devTasks, context.config.sender, context.config.recipient);
 }).use(ssm({
