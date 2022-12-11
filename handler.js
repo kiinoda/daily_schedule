@@ -71,11 +71,11 @@ const getEvents = async (sheet, currentDayNumber) => {
   events.push(thoughts[randomThoughtID]);
   events.push("");
   for (let i = EVENTS_SHEET_FIRST_ROW; i < EVENTS_SHEET_END_ROW; i++) {
-    const eventSignifier = sheet.getCell(i, currentDayNumber).value;
-    const taggedForMigration = sheet.getCell(i, EVENTS_SHEET_MIGRATE_COLUMN).value;
+    const eventSignifier = await sheet.getCell(i, currentDayNumber).value;
+    const taggedForMigration = await sheet.getCell(i, EVENTS_SHEET_MIGRATE_COLUMN).value;
     if (null != eventSignifier && null == taggedForMigration) {
-      const time = sheet.getCell(i, EVENTS_SHEET_TIME_COLUMN).value || EVENTS_EMPTY_TIME_PLACEHOLDER;
-      const description = sheet.getCell(i, EVENTS_SHEET_EVENT_COLUMN).value;
+      const time = await sheet.getCell(i, EVENTS_SHEET_TIME_COLUMN).value || EVENTS_EMPTY_TIME_PLACEHOLDER;
+      const description = await sheet.getCell(i, EVENTS_SHEET_EVENT_COLUMN).value;
       events.push(`${eventSignifier} ${time} ${description}`);
     }
   }
@@ -108,7 +108,7 @@ const getRandomElements = (array, count) => {
   return elements;
 }
 
-const getHouseTasks = async (sheet) => {
+const getHouseTasks = (sheet) => {
   const isUrgent = (theDate, threshold) => {
     let result = false
     if (theDate in TASKS_SHEET_MAGIC_DUE_DATE_VALUES) {
@@ -157,7 +157,7 @@ const getHouseTasks = async (sheet) => {
   return tasks;
 }
 
-const getDevTasks = async (sheet) => {
+const getDevTasks = (sheet) => {
   const tasks = [];
   for (let i = DEV_TASKS_SHEET_FIRST_ROW; i < DEV_TASKS_SHEET_LAST_ROW; i++) {
     const description = sheet.getCell(i, DEV_TASKS_SHEET_TASK_COLUMN).value;
@@ -199,7 +199,7 @@ const [_, weekNo] = getWeekNumber(currentDate);
 const currentDayNumber = getWeekDayNumberInRomanian(currentDate);
 const currentYear = getYear(currentDate);
 
-module.exports.run = middy(async (event, context) => {
+module.exports.run = middy(async (_event, context) => {
   const doc = new GoogleSpreadsheet(context.config.spreadsheetId);
   doc.useApiKey(context.config.apiKey);
   await doc.loadInfo();
@@ -218,7 +218,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const tasksSheet = doc.sheetsByTitle[TASKS_SHEET_NAME];
     await tasksSheet.loadCells(TASKS_RANGE);
-    houseTasks = await getHouseTasks(tasksSheet);
+    houseTasks = getHouseTasks(tasksSheet);
   } catch {
     houseTasks = ['ERROR: House tasks could not be loaded.'];
   }
@@ -226,7 +226,7 @@ module.exports.run = middy(async (event, context) => {
   try {
     const devTasksSheet = doc.sheetsByTitle[DEV_TASKS_SHEET_NAME];
     await devTasksSheet.loadCells(DEV_TASKS_RANGE);
-    devTasks = await getDevTasks(devTasksSheet);
+    devTasks = getDevTasks(devTasksSheet);
   } catch {
     devTasks = ['ERROR: Development tasks could not be loaded.'];
   }
