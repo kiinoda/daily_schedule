@@ -60,13 +60,13 @@ const sendEmail = async (events, houseTasks, devTasks, sender, recipient) => {
 }
 
 const getEvents = async (sheet, currentDayNumber) => {
-  const thoughts = new Array(
+  const thoughts = [
     "Hey, what do you fear most today?",
     "If you can't delegate, take care of the urgent items first!",
     "Are you doing enough to maintain your physical and mental health?",
     "Hey, actual life happens outside the computer."
-  )
-  const events = new Array();
+  ]
+  const events = [];
   const randomThoughtID = Math.floor(Math.random() * thoughts.length);
   events.push(thoughts[randomThoughtID]);
   events.push("");
@@ -84,7 +84,7 @@ const getEvents = async (sheet, currentDayNumber) => {
 
 const getRandomElements = (array, count) => {
   const randomIndexes = (maximum, howMany) => {
-    const arr = new Array();
+    const arr = [];
 
     // populate with values
     for (let i = 0; i < maximum; i++) {
@@ -101,7 +101,7 @@ const getRandomElements = (array, count) => {
     return arr.slice(maximum-howMany);
   }
 
-  const elements = new Array();
+  const elements = [];
   for (const value of randomIndexes(array.length, count)) {
     elements.push(array[value]);
   }
@@ -122,9 +122,9 @@ const getHouseTasks = async (sheet) => {
     }
     return result
   }
-  const easyTasks = new Array();
-  const topTasks = new Array();
-  const someEasyTasks = new Array();
+  const easyTasks = [];
+  const topTasks = [];
+  const someEasyTasks = [];
   for (let i = TASKS_SHEET_FIRST_ROW; i < TASKS_SHEET_END_ROW; i++) {
     const taskSignifier = sheet.getCell(i, TASKS_SHEET_TAG_COLUMN).value;
     if (null != taskSignifier) {
@@ -158,7 +158,7 @@ const getHouseTasks = async (sheet) => {
 }
 
 const getDevTasks = async (sheet) => {
-  const tasks = new Array();
+  const tasks = [];
   for (let i = DEV_TASKS_SHEET_FIRST_ROW; i < DEV_TASKS_SHEET_LAST_ROW; i++) {
     const description = sheet.getCell(i, DEV_TASKS_SHEET_TASK_COLUMN).value;
     if (null != description) {
@@ -203,9 +203,9 @@ module.exports.run = middy(async (event, context) => {
   const doc = new GoogleSpreadsheet(context.config.spreadsheetId);
   doc.useApiKey(context.config.apiKey);
   await doc.loadInfo();
-  let events = new Array();
-  let houseTasks = new Array();
-  let devTasks = new Array();
+  let events = [];
+  let houseTasks = [];
+  let devTasks = [];
 
   try {
     const eventsSheet = doc.sheetsByTitle[`${currentYear}W${weekNo}`];
