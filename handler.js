@@ -36,7 +36,7 @@ AWS.config.update({ region: "eu-west-1" });
 const sendEmail = async (events, houseTasks, devTasks, sender, recipient) => {
   const textMessage = events.join('\n') + '\n\n\n' + houseTasks.join('\n') + '\n\n\n' + devTasks.join('\n');
   const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${houseTasks.join('\n')}\n\n\n${devTasks.join('\n')}</pre></html>`;
-  var params = {
+  const params = {
     Destination: { ToAddresses: [recipient] },
     Message: {
       Body: {
@@ -177,8 +177,8 @@ const getDevTasks = async (sheet) => {
 function getWeekNumber(d) {
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
   return [d.getUTCFullYear(), weekNo];
 }
 
