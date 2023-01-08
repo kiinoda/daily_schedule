@@ -34,8 +34,10 @@ const DEV_TASKS_SHEET_TASK_COLUMN = 0
 AWS.config.update({ region: "eu-west-1" });
 
 const sendEmail = async (events, houseTasks, devTasks, sender, recipient) => {
-  const textMessage = events.join('\n') + '\n\n\n' + houseTasks.join('\n') + '\n\n\n' + devTasks.join('\n');
-  const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${houseTasks.join('\n')}\n\n\n${devTasks.join('\n')}</pre></html>`;
+  // const textMessage = events.join('\n') + '\n\n\n' + houseTasks.join('\n') + '\n\n\n' + devTasks.join('\n');
+  // const htmlMessage = `<html><pre>${events.join('\n')}\n\n\n${houseTasks.join('\n')}\n\n\n${devTasks.join('\n')}</pre></html>`;
+  const textMessage = events.join('\n') + '\n';
+  const htmlMessage = `<html><pre>${events.join('\n')}\n</pre></html>`;
   const params = {
     Destination: { ToAddresses: [recipient] },
     Message: {
