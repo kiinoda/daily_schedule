@@ -25,3 +25,10 @@ functions:
       - schedule: cron(45 3 ? * * *)
     memorySize: 128
     timeout: 20
+  sendReminders:
+    handler: reminder.run
+    events:
+      - schedule: cron(0/5 * ? * * *)
+    memorySize: 128
+    timeout: 20
+
