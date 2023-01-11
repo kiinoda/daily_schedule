@@ -16,10 +16,10 @@ const EVENTS_EMPTY_TIME_PLACEHOLDER = "----"
 
 AWS.config.update({ region: "eu-west-1" });
 
-const sendEmail = async (events, sender, recipient) => {
+const getSESEmailParameters = (events, sender, recipient) => {
   const textMessage = events.join('\n') + '\n';
   const htmlMessage = `<html><pre>${events.join('\n')}\n</pre></html>`;
-  const params = {
+  const parameters = {
     Destination: { ToAddresses: [recipient] },
     Message: {
       Body: {
@@ -30,16 +30,19 @@ const sendEmail = async (events, sender, recipient) => {
     },
     Source: `Daily Schedule Bot <${sender}>`
   };
+  return parameters
+}
+
+const sendSESEmail = async (parameters) => {
   const ses = new AWS.SES({ apiVersion: '2010-12-01' });
   try {
-    const status = await ses.sendEmail(params).promise();
+    const status = await ses.sendEmail(parameters).promise();
     console.log('Successfully sent email');
     console.log(status);
   } catch (err) {
     console.log('Failed sending email');
     console.log(err);
   }
-
 }
 
 const getEvents = async (sheet, currentDayNumber) => {
@@ -105,7 +108,8 @@ module.exports.run = middy(async (_event, context) => {
     events = ['ERROR: Weekly data could not be loaded.'];
   }
 
-  await sendEmail(events, context.config.sender, context.config.recipient);
+  emailParameters = getSESEmailParameters(events, context.config.sender, context.config.recipient);
+  await sendSESEmail(emailParameters);
 }).use(ssm({
   cache: false,
   setToContext: true,
