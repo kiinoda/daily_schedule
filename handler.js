@@ -6,6 +6,10 @@ const ssm = require('@middy/ssm')
 const AWS = require('aws-sdk');
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 
+const {getSESEmailParameters, sendSESEmail} = require('./lib/aws_email.js');
+
+const AWS_REGION = "eu-west-1"
+
 const EVENT_RANGE = "A1:Q50"
 const EVENTS_SHEET_FIRST_ROW = 3
 const EVENTS_SHEET_END_ROW = 49
@@ -14,36 +18,7 @@ const EVENTS_SHEET_EVENT_COLUMN = 9
 const EVENTS_SHEET_MIGRATE_COLUMN = 16
 const EVENTS_EMPTY_TIME_PLACEHOLDER = "----"
 
-AWS.config.update({ region: "eu-west-1" });
-
-const getSESEmailParameters = (events, sender, recipient) => {
-  const textMessage = events.join('\n') + '\n';
-  const htmlMessage = `<html><pre>${events.join('\n')}\n</pre></html>`;
-  const parameters = {
-    Destination: { ToAddresses: [recipient] },
-    Message: {
-      Body: {
-        Text: { Data: textMessage },
-        Html: { Data: htmlMessage }
-      },
-      Subject: { Data: 'Today\'s Schedule' }
-    },
-    Source: `Daily Schedule Bot <${sender}>`
-  };
-  return parameters
-}
-
-const sendSESEmail = async (parameters) => {
-  const ses = new AWS.SES({ apiVersion: '2010-12-01' });
-  try {
-    const status = await ses.sendEmail(parameters).promise();
-    console.log('Successfully sent email');
-    console.log(status);
-  } catch (err) {
-    console.log('Failed sending email');
-    console.log(err);
-  }
-}
+AWS.config.update({ region: AWS_REGION });
 
 const getEvents = async (sheet, currentDayNumber) => {
   const thoughts = [
@@ -108,8 +83,8 @@ module.exports.run = middy(async (_event, context) => {
     events = ['ERROR: Weekly data could not be loaded.'];
   }
 
-  emailParameters = getSESEmailParameters(events, context.config.sender, context.config.recipient);
-  await sendSESEmail(emailParameters);
+  const emailParameters = getSESEmailParameters(events, context.config.sender, context.config.recipient);
+  await sendSESEmail(emailParameters, AWS_REGION);
 }).use(ssm({
   cache: false,
   setToContext: true,

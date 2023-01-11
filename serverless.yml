@@ -19,7 +19,7 @@ provider:
         Resource: "arn:aws:ses:*"
 
 functions:
-  cronHandler:
+  dailySchedule:
     handler: handler.run
     events:
       - schedule: cron(45 3 ? * * *)
