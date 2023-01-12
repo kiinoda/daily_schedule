@@ -1,7 +1,7 @@
 {
   "name": "daily_schedule",
   "version": "1.0.0",
-  "description": "",
+  "description": "This code will send daily schedule and reminders via email.",
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,10 +11,23 @@
   "dependencies": {
     "@middy/core": "^3.1.0",
     "@middy/ssm": "^3.1.0",
-    "google-spreadsheet": "^3.3.0"
+    "google-spreadsheet": "^3.3.0",
+    "moment-timezone": "^0.5.40"
   },
   "devDependencies": {
     "aws-sdk": "^2.1160.0",
     "serverless": "^3.22.0"
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiinoda/daily_schedule.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/kiinoda/daily_schedule/issues"
+  },
+  "homepage": "https://github.com/kiinoda/daily_schedule#readme"
 }
