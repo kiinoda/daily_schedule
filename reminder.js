@@ -16,10 +16,10 @@ const ALARM_THRESHOLD = 6;
 module.exports.run = middy(
   async (_event, context) => {
     const alarms = await getAlarms(context.config.spreadsheetId, context.config.apiKey, ALARM_THRESHOLD);
-    alarms.forEach(async (alarm) => {
+    for (const alarm of alarms) {
       const emailParameters = getParametersForAlarm(alarm, context.config.sender, context.config.recipient);
       await sendSESEmail(emailParameters, AWS_REGION);
-    });
+    }
   }).use(ssm({
     cache: false,
     setToContext: true,
