@@ -11,11 +11,9 @@ const {getAlarms} = require('./lib/events.js');
 const AWS_REGION = "eu-west-1";
 AWS.config.update({ region: AWS_REGION });
 
-const ALARM_THRESHOLD = 6;
-
 module.exports.run = middy(
   async (_event, context) => {
-    const alarms = await getAlarms(context.config.spreadsheetId, context.config.apiKey, ALARM_THRESHOLD);
+    const alarms = await getAlarms(context.config.spreadsheetId, context.config.apiKey);
     for (const alarm of alarms) {
       const emailParameters = getParametersForAlarm(alarm, context.config.sender, context.config.recipient);
       await sendSESEmail(emailParameters, AWS_REGION);
