@@ -1,6 +1,5 @@
 service: daily-schedule
-frameworkVersion: '3'
-
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -9,18 +8,18 @@ provider:
   iam:
     role:
       statements:
-      - Effect: Allow
-        Action:
-          - ssm:*
-        Resource: "arn:aws:ssm:*"
-      - Effect: Allow
-        Action:
-          - ses:*
-        Resource: "arn:aws:ses:*"
+        - Effect: Allow
+          Action:
+            - ssm:*
+          Resource: "arn:aws:ssm:*"
+        - Effect: Allow
+          Action:
+            - ses:*
+          Resource: "arn:aws:ses:*"
 
 functions:
   dailySchedule:
-    handler: handler.run
+    handler: schedule.run
     events:
       - schedule: cron(45 3 ? * * *)
     memorySize: 128
@@ -28,7 +27,6 @@ functions:
   sendReminders:
     handler: reminder.run
     events:
-      - schedule: cron(0/5 * ? * * *)
+      - schedule: cron(3/5 * ? * * *)
     memorySize: 128
     timeout: 20
-
