@@ -9,13 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-ssm": "^3.298.0",
     "@middy/core": "^4.2.7",
     "@middy/ssm": "^4.2.7",
     "google-spreadsheet": "^3.3.0",
     "moment-timezone": "^0.5.41"
   },
   "devDependencies": {
-    "@aws-sdk/client-ssm": "^3.295.0",
+    "aws-sdk": "^2.1342.0",
     "serverless": "^3.28.1"
   },
   "directories": {
